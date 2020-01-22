@@ -18,10 +18,10 @@ from {{ import }}_proto cimport *
     {{ field.name }} = _{{ field.full_name }}
 
     {%- endfor %}
-        {{ name }}_Name = {
-        {%- for field in enum.fields.values() %}
-            {{ field.name }}: '{{ field.name }}',
-        {%- endfor %}
+    {{ name }}_Name = {
+    {%- for field in enum.fields.values() %}
+        {{ field.name }}: '{{ field.name }}',
+    {%- endfor %}
     }
 {%- endmacro %}
 
