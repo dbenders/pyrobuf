@@ -15,7 +15,7 @@ else:
     _FileExistsError = OSError
 
 
-def add_pyrobuf_module(dist, pyrobuf_module):
+def add_pyrobuf_module(dist, pyrobuf_module, args):
     dir_name = "pyrobuf/_" + pyrobuf_module
     package = "{}_{}".format(dist.get_name(), pyrobuf_module)
     try:
@@ -24,14 +24,14 @@ def add_pyrobuf_module(dist, pyrobuf_module):
         pass
 
     compiler = Compiler([pyrobuf_module], out=dir_name,
-                        package=package)
+                        package=package, **args)
     compiler.extend(dist)
 
 
-def pyrobuf_modules(dist, attr, value):
-    assert attr == 'pyrobuf_modules'
-    if isinstance(value, basestring):
-        value = [value]
+def pyrobuf(dist, attr, value):
+    assert attr == 'pyrobuf'
 
-    for pyrobuf_module in value:
-        add_pyrobuf_module(dist, pyrobuf_module)
+    args = value.get('args', {})
+    for pyrobuf_module in value.get('modules', []):
+        add_pyrobuf_module(dist, pyrobuf_module, args)
+

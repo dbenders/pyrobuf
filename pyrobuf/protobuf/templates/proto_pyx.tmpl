@@ -203,12 +203,21 @@ cdef class {{ message.full_name }}:
             else:
                 raise ValueError("{} not a valid value for enum {{ field.enum_name }}".format(val))
             {%- elif field.type == 'string' and version_major == 2 %}
-            if isinstance(val, unicode):
-                list.append(self._{{ field.name }}, val)
-            elif isinstance(val, str):
-                list.append(self._{{ field.name }}, unicode(val, 'utf-8'))
-            else:
-                raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (val, type(val), str, unicode))
+                {%- if not use_str %}
+                    if isinstance(val, unicode):
+                        list.append(self._{{ field.name }}, val)
+                    elif isinstance(val, str):
+                        list.append(self._{{ field.name }}, unicode(val, 'utf-8'))
+                    else:
+                        raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (val, type(val), str, unicode))
+                {%- else %}
+                    if isinstance(val, unicode):
+                        list.append(self._{{ field.name }}, val.encode('utf-8'))
+                    elif isinstance(val, str):
+                        list.append(self._{{ field.name }}, val)
+                    else:
+                        raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (val, type(val), str, unicode))
+                {%- endif %}
             {%- elif field.type == 'string' and version_major != 2 %}
             if isinstance(val, bytes):
                 list.append(self._{{ field.name }}, val.decode('utf-8'))
@@ -239,12 +248,21 @@ cdef class {{ message.full_name }}:
         else:
             raise ValueError("{} not a valid value for enum {{ field.enum_name }}".format(value))
             {%- elif field.type == 'string' and version_major == 2 %}
+                {%- if not use_str %}
         if isinstance(value, unicode):
             self._{{ field.name }} = value
         elif isinstance(value, str):
             self._{{ field.name }} = unicode(value, 'utf-8')
         else:
             raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (value, type(value), unicode, str))
+                {%- else %}
+        if isinstance(value, unicode):
+            self._{{ field.name }} = value.encode('utf-8')
+        elif isinstance(value, str):
+            self._{{ field.name }} = value
+        else:
+            raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (value, type(value), unicode, str))
+                {%- endif %}
             {%- elif field.type == 'string' and version_major != 2 %}
         if isinstance(value, bytes):
             self._{{ field.name }} = value.decode('utf-8')
@@ -284,7 +302,7 @@ cdef class {{ message.full_name }}:
             {%- if field.type == 'message' %}
         cdef {{ field.message_name }} {{ field.name }}_elt
             {%- elif field.type == 'string' %}
-        cdef {% if version_major == 2 %}unicode{% else %}str{% endif %} {{ field.name }}_elt
+        cdef {% if version_major == 2 and not use_str %}unicode{% else %}str{% endif %} {{ field.name }}_elt
             {%- elif field.type == 'bytes' %}
         cdef bytes {{ field.name }}_elt
             {%- else  %}
@@ -332,7 +350,7 @@ cdef class {{ message.full_name }}:
                 current_offset += {{ field.name }}_elt._protobuf_deserialize(memory+current_offset, <int>field_size, cache)
                 {%- elif field.type == 'string' %}
                 field_size = get_varint64(memory, &current_offset)
-                    {%- if version_major == 2 %}
+                    {%- if version_major == 2 and not use_str %}
                 {{ field.name }}_elt = unicode(memory[current_offset:current_offset + field_size], 'utf-8')
                     {%- else %}
                 {{ field.name }}_elt = str(memory[current_offset:current_offset + field_size], 'utf-8')
@@ -367,7 +385,7 @@ cdef class {{ message.full_name }}:
 
         {%- elif field.type == 'string' %}
                 field_size = get_varint64(memory, &current_offset)
-            {%- if version_major == 2 %}
+            {%- if version_major == 2 and not use_str %}
                 self._{{ field.name }} = unicode(memory[current_offset:current_offset + field_size], 'utf-8')
             {%- else %}
                 self._{{ field.name }} = str(memory[current_offset:current_offset + field_size], 'utf-8')
@@ -660,7 +678,7 @@ cdef class {{ message.full_name }}:
             {%- elif field.type == 'bytes' %}
         cdef bytes {{ field.name }}_elt
             {%- elif field.type == 'string' %}
-        cdef {% if version_major == 2 %}unicode{% else %}str{% endif %} {{ field.name }}_elt
+        cdef {% if version_major == 2 and not use_str %}unicode{% else %}str{% endif %} {{ field.name }}_elt
         cdef bytes {{ field.name }}_elt_bytes
             {%- else %}
         cdef {{ field.c_type }} {{ field.name }}_elt

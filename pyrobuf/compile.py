@@ -25,7 +25,7 @@ class Compiler(object):
 
     def __init__(self, sources, out="out", build="build", install=False,
                  proto3=False, force=False, package=None, includes=None,
-                 clean=False):
+                 clean=False, use_str=True):
         self.sources = sources
         self.out = out
         self.build = build
@@ -34,6 +34,7 @@ class Compiler(object):
         self.package = package
         self.includes = includes or []
         self.clean = clean
+        self.use_str = use_str
         here = os.path.dirname(os.path.abspath(__file__))
         self.include_path = [os.path.join(here, 'src'), self.out]
         self._generated = set()
@@ -61,6 +62,8 @@ class Compiler(object):
                             help="install the extension [default: False]")
         parser.add_argument('--proto3', action='store_true',
                             help="compile proto3 syntax [default: False]")
+        parser.add_argument('--use-str', action='store_true',
+                            help="use str instead of unicode for strings in python 2")
         parser.add_argument('--force', action='store_true',
                             help="force install")
         parser.add_argument('--package', type=str, default=None,
@@ -74,7 +77,7 @@ class Compiler(object):
         return cls(args.sources, out=args.out_dir, build=args.build_dir,
                    install=args.install, proto3=args.proto3, force=args.force,
                    package=args.package, includes=args.include,
-                   clean=args.clean)
+                   clean=args.clean, use_str=args.use_str)
 
     def compile(self):
         script_args = ['build', '--build-base={0}'.format(self.build)]
@@ -156,8 +159,8 @@ class Compiler(object):
         name_pyx = "{}_proto.pyx".format(name)
         self._pyx_files.append(os.path.join(self.out, name_pyx))
 
-        generated_pxd = self.t_pxd.render(msg_def, version_major=_VM)
-        generated_pyx = self.t_pyx.render(msg_def, version_major=_VM)
+        generated_pxd = self.t_pxd.render(msg_def, version_major=_VM, use_str=self.use_str)
+        generated_pyx = self.t_pyx.render(msg_def, version_major=_VM, use_str=self.use_str)
         write_pxd = True
         write_pyx = True
 
