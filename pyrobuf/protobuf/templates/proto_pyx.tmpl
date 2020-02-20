@@ -126,7 +126,7 @@ cdef class {{ message.full_name }}:
         self._{{ field.name }} = {{ field.default }}
             {%- endif %}
         {%- elif field.type == 'string' %}
-        self._{{ field.name }} = {% if version_major == 2 %}u{% endif %}""
+        self._{{ field.name }} = {% if version_major == 2 and not use_str %}u{% endif %}""
         {%- elif field.type == 'bytes' %}
         self._{{ field.name }} = b""
         {%- elif field.type == 'enum' and field.enum_def != None %}
