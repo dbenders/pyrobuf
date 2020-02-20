@@ -16,7 +16,7 @@ else:
 
 
 def add_pyrobuf_module(dist, pyrobuf_module, args):
-    dir_name = "pyrobuf/_" + pyrobuf_module
+    dir_name = "build/pyrobuf/_" + pyrobuf_module
     package = "{}_{}".format(dist.get_name(), pyrobuf_module)
     try:
         os.makedirs(os.path.join(dir_name, package))

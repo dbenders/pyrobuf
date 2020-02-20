@@ -202,22 +202,20 @@ cdef class {{ message.full_name }}:
                 {% endfor %}
             else:
                 raise ValueError("{} not a valid value for enum {{ field.enum_name }}".format(val))
-            {%- elif field.type == 'string' and version_major == 2 %}
-                {%- if not use_str %}
-                    if isinstance(val, unicode):
-                        list.append(self._{{ field.name }}, val)
-                    elif isinstance(val, str):
-                        list.append(self._{{ field.name }}, unicode(val, 'utf-8'))
-                    else:
-                        raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (val, type(val), str, unicode))
-                {%- else %}
-                    if isinstance(val, unicode):
-                        list.append(self._{{ field.name }}, val.encode('utf-8'))
-                    elif isinstance(val, str):
-                        list.append(self._{{ field.name }}, val)
-                    else:
-                        raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (val, type(val), str, unicode))
-                {%- endif %}
+            {%- elif field.type == 'string' and version_major == 2 and not use_str %}
+            if isinstance(val, unicode):
+                list.append(self._{{ field.name }}, val)
+            elif isinstance(val, str):
+                list.append(self._{{ field.name }}, unicode(val, 'utf-8'))
+            else:
+                raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (val, type(val), str, unicode))
+            {%- elif field.type == 'string' and version_major == 2 and use_str %}
+            if isinstance(val, unicode):
+                list.append(self._{{ field.name }}, val.encode('utf-8'))
+            elif isinstance(val, str):
+                list.append(self._{{ field.name }}, val)
+            else:
+                raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (val, type(val), str, unicode))
             {%- elif field.type == 'string' and version_major != 2 %}
             if isinstance(val, bytes):
                 list.append(self._{{ field.name }}, val.decode('utf-8'))
@@ -247,22 +245,20 @@ cdef class {{ message.full_name }}:
                 {% endfor %}
         else:
             raise ValueError("{} not a valid value for enum {{ field.enum_name }}".format(value))
-            {%- elif field.type == 'string' and version_major == 2 %}
-                {%- if not use_str %}
+            {%- elif field.type == 'string' and version_major == 2 and not use_str %}
         if isinstance(value, unicode):
             self._{{ field.name }} = value
         elif isinstance(value, str):
             self._{{ field.name }} = unicode(value, 'utf-8')
         else:
             raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (value, type(value), unicode, str))
-                {%- else %}
+            {%- elif field.type == 'string' and version_major == 2 and use_str %}
         if isinstance(value, unicode):
             self._{{ field.name }} = value.encode('utf-8')
         elif isinstance(value, str):
             self._{{ field.name }} = value
         else:
             raise TypeError("%r has type %s, but expected one of: (%s, %s)" % (value, type(value), unicode, str))
-                {%- endif %}
             {%- elif field.type == 'string' and version_major != 2 %}
         if isinstance(value, bytes):
             self._{{ field.name }} = value.decode('utf-8')
@@ -462,7 +458,7 @@ cdef class {{ message.full_name }}:
             self._{{ field.name }} = None
             {%- elif field.default != None %}
                 {%- if field.type == 'string' %}
-            self._{{ field.name }} = {% if version_major == 2 %}u{% endif %}{{ field.default }}
+            self._{{ field.name }} = {% if version_major == 2 and not use_str %}u{% endif %}{{ field.default }}
                 {%- elif field.type == 'bytes' %}
             self._{{ field.name }} = b{{ field.default }}
                 {%- elif field.type == 'enum' %}
@@ -471,7 +467,7 @@ cdef class {{ message.full_name }}:
             self._{{ field.name }} = {{ field.default }}
                 {%- endif %}
             {%- elif field.type == 'string' %}
-            self._{{ field.name }} = {% if version_major == 2 %}u{% endif %}""
+            self._{{ field.name }} = {% if version_major == 2 and not use_str %}u{% endif %}""
             {%- elif field.type == 'bytes' %}
             self._{{ field.name }} = b""
             {%- elif field.type == 'enum' and field.enum_def != None %}
