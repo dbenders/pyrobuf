@@ -117,7 +117,7 @@ cdef class {{ message.full_name }}:
         self._{{ field.name }} = None
         {%- elif field.default != None %}
             {%- if field.type == 'string' %}
-        self._{{ field.name }} = {% if version_major == 2 %}u{% endif %}{{ field.default }}
+        self._{{ field.name }} = {% if version_major == 2 and not use_str %}u{% endif %}{{ field.default }}
             {%- elif field.type == 'bytes' %}
         self._{{ field.name }} = b{{ field.default }}
             {%- elif field.type == 'enum' %}
@@ -352,6 +352,8 @@ cdef class {{ message.full_name }}:
                 field_size = get_varint64(memory, &current_offset)
                     {%- if version_major == 2 and not use_str %}
                 {{ field.name }}_elt = unicode(memory[current_offset:current_offset + field_size], 'utf-8')
+                    {%- elif version_major == 2 and use_str %}
+                {{ field.name }}_elt = str(memory[current_offset:current_offset + field_size])
                     {%- else %}
                 {{ field.name }}_elt = str(memory[current_offset:current_offset + field_size], 'utf-8')
                     {%- endif %}
@@ -387,6 +389,8 @@ cdef class {{ message.full_name }}:
                 field_size = get_varint64(memory, &current_offset)
             {%- if version_major == 2 and not use_str %}
                 self._{{ field.name }} = unicode(memory[current_offset:current_offset + field_size], 'utf-8')
+            {%- elif version_major == 2 and use_str %}
+                self._{{ field.name }} = str(memory[current_offset:current_offset + field_size])
             {%- else %}
                 self._{{ field.name }} = str(memory[current_offset:current_offset + field_size], 'utf-8')
             {%- endif %}

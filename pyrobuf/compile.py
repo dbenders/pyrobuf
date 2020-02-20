@@ -196,7 +196,7 @@ class Compiler(object):
         self._pyx_files.append(os.path.join(self.out, name_pyx))
 
         with open(os.path.join(self.out, name_pxd), 'w') as fp:
-            fp.write(self.t_pxd.render(meta, version_major=_VM))
+            fp.write(self.t_pxd.render(meta, version_major=_VM, use_str=self.use_str))
 
         with open(os.path.join(self.out, name_pyx), 'w') as fp:
-            fp.write(self.t_pyx.render(meta, version_major=_VM))
+            fp.write(self.t_pyx.render(meta, version_major=_VM, use_str=self.use_str))

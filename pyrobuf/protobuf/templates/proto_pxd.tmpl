@@ -17,9 +17,9 @@ cdef class {{ message.full_name }}:
 {% for index, field in message.fields|dictsort() -%}
     {%- if field.modifier == 'repeated' %}
     cdef {{ field.list_type }} _{{ field.name }}
-    {%- elif field.type == 'string' and version_major == 2 %}
+    {%- elif field.type == 'string' and version_major == 2 and not use_str %}
     cdef unicode _{{ field.name }}
-    {%- elif field.type == 'string' and version_major != 2 %}
+    {%- elif field.type == 'string' and (version_major != 2 or use_str) %}
     cdef str _{{ field.name }}
     {%- elif field.type == 'bytes' %}
     cdef bytes _{{ field.name }}
